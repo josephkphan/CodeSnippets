@@ -128,11 +128,14 @@ GROUP BY state
 ORDER BY state ASC
 
 -- query 4 --
-SELECT b.business_id AS b_id, b.business_name AS name, b.review_count AS number_of_reviews, AVG(r.rating) as avg_rating
+SELECT b.business_id AS b_id, b.business_name AS name, b.review_count AS number_of_reviews, AVG(r.rating) as avg_rating, bc.category_name AS category_name
 FROM Business b,
 INNER JOIN Review r ON b.business_id = r.business_id
-GROUP BY business_id
-ORDER BY avg_rating DESC LIMIT 10
+INNER JOIN BusinessCategory bc ON b.business_id = bc.business_id
+GROUP BY b_id
+WHERE category_name = "Breakfast & Brunch"
+ORDER BY avg_rating DESC
+LIMIT 10
 
 -- NOTE-- DOESN'T CONSIDER TIE BREAKS YET
 
@@ -155,10 +158,10 @@ WHERE category_name LIKE "Burgers" AND b.city ="San Jose" AND b.state="CA"
 ORDER BY scores desc
 
 -- query 7 --
-SELECT r.yelp_user_id, SUM(mr.marked_helpful) AS TotalAmount
+SELECT r.yelp_user_id as u_id, SUM(mr.marked_helpful) AS TotalAmount
 FROM Review r
 INNER JOIN MarkedReview mr ON r.review_id = mr.review_id
-GROUP BY r.yelp_user_id
+GROUP BY u_id
 ORDER BY TotalAmount DESC
 LIMIT 1
 
