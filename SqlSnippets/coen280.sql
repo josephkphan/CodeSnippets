@@ -79,9 +79,10 @@ CREATE TABLE BusinessPhoto(
 SELECT Count(*) FROM Business WHERE state="CA"
 
 -- Query 2 --
-SELECT a.business_id AS b_id, a.name AS business_name, b.business_category_id AS bc_id
-FROM Business a, BusinessCategory b
+SELECT b.business_id AS b_id, b.name AS business_name, bc.business_category_id AS bc_id
+FROM Business b
 WHERE a.name LIKE "Coffee" AND NOT b.business_category_id LIKE "Coffee"
+INNER JOIN BusinessCategory bc ON b.business_id = bc.business_id
 ORDER BY b_id
 
 -- Query 3 --
