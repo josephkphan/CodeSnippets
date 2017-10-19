@@ -121,14 +121,14 @@ WHERE b.name LIKE "%Coffee%" AND NOT b.business_category_id LIKE "%Coffee%"
 ORDER BY b_id ASC
 
 -- Query 3 --
-SELECT b.business_id AS b_id, b.business_name AS name, b.review_count AS review_count, b.state AS state,
+SELECT b.business_id AS b_id, b.business_name AS name, MAX(b.review_count) AS review_count, b.state AS state,
 FROM Business b
 INNER JOIN BusinessCategory bc ON b.business_id = bc.business_id
 GROUP BY state
 ORDER BY state ASC
 
 -- query 4 --
-SELECT b.business_id AS business_id, b.business_name AS name, b.review_count AS number_of_reviews, AVG(r.rating) as avg_rating
+SELECT b.business_id AS b_id, b.business_name AS name, b.review_count AS number_of_reviews, AVG(r.rating) as avg_rating
 FROM Business b,
 INNER JOIN Review r ON b.business_id = r.business_id
 GROUP BY business_id
@@ -137,7 +137,7 @@ ORDER BY avg_rating DESC LIMIT 10
 -- NOTE-- DOESN'T CONSIDER TIE BREAKS YET
 
 -- query 5 --
-SELECT u.yelp_user_id as uid, u.first_name as first_name, u.last_name as last_name, COUNT(DISTINCT(b.state)) as distinct_states_count
+SELECT u.yelp_user_id AS uid, u.first_name AS first_name, u.last_name AS last_name, COUNT(DISTINCT(b.state)) AS distinct_states_count
 FROM Review r
 INNER JOIN YelpUser u ON r.yelp_user_id = u.yelp_user_id
 INNER JOIN Business b ON r.business_id = b.business_id
@@ -146,16 +146,16 @@ WHERE distinct_states_count > 5
 ORDER BY distinct_states_count desc
 
 -- query 6 --
-SELECT  b.business_id as b_id, b.business_name as name, AVG(r.rating) as score, b.review_count as traveler_reviews_received
+SELECT  b.business_id AS b_id, b.business_name AS name, AVG(r.rating) AS score, b.review_count AS traveler_reviews_received, bc.category_name AS category_name, b.city AS city, b.state AS state
 FROM Business b
 INNER JOIN Review r ON r.business_id = b.business_id
 INNER JOIN BusinessCategory bc ON bc.business_id = b.business_id
 GROUP BY b_id
-WHERE bc.category_type LIKE "Burgers" AND b.city ="San Jose" AND b.state="CA"
+WHERE category_name LIKE "Burgers" AND b.city ="San Jose" AND b.state="CA"
 ORDER BY scores desc
 
 -- query 7 --
-SELECT r.yelp_user_id, SUM(mr.marked_helpful) as TotalAmount
+SELECT r.yelp_user_id, SUM(mr.marked_helpful) AS TotalAmount
 FROM Review r
 INNER JOIN MarkedReview mr ON r.review_id = mr.review_id
 GROUP BY r.yelp_user_id
@@ -163,7 +163,7 @@ ORDER BY TotalAmount DESC
 LIMIT 1
 
 -- query 8 --
-SELECT AVG(r.rating) as avg_rating, b.review_count as review_count, b.business_id as bid, b.name as name
+SELECT AVG(r.rating) AS avg_rating, b.review_count AS review_count, b.business_id AS bid, b.name AS name
 FROM Business b
 INNER JOIN Review r ON r.business_id = b.business_id
 GROUP BY BusinessID
