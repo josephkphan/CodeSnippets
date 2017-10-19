@@ -24,7 +24,8 @@ CREATE TABLE Review (
     review_id int,
     rating int,
     public_date varchar(255),
-    reocmmended varchar(255),
+    recommended varchar(255),
+    marked_helpful varchar(255),
     content_type varchar(255) NOT NULL,   -- decides whether content is a text or photo
     content_text varchar(255),
     content_photo varchar(255),
@@ -32,6 +33,12 @@ CREATE TABLE Review (
     PRIMARY KEY (review_id),
     FOREIGN KEY (yelp_user_id) REFERENCES YelpUser(yelp_user_id),
     FOREIGN KEY (business_id) REFERENCES Business(business_id)
+);
+
+CREATE TABLE MarkedReview(
+    marked_helpful int, -- Acts as a boolean
+    FOREIGN KEY (yelp_user_id) REFERENCES YelpUser(yelp_user_id),
+    FOREIGN KEY (review_id) REFERENCES Review(review_id),
 );
 
 
@@ -78,7 +85,7 @@ WHERE a.name LIKE "Coffee" AND NOT b.business_category_id LIKE "Coffee"
 ORDER BY b_id
 
 -- Query 3 --
-SELECT b.business_id AS b_id, b.name AS name, b.review_count AS review_count, b.state AS state,
+SELECT b.business_id AS b_id, b.business_name AS name, b.review_count AS review_count, b.state AS state,
 FROM Business b
 INNER JOIN BusinessCategory bc ON b.business_id = bc.business_id
 GROUP BY state
@@ -88,7 +95,7 @@ ORDER BY state ASC
 SELECT b.business_id AS business_id, b.business_name AS name, b.review_count AS number_of_reviews, AVG(r.rating) as avg_rating
 FROM Business b,
 INNER JOIN Review r ON b.business_id = r.business_id
-GROUP BY name
+GROUP BY business_id
 ORDER BY avg_rating DESC LIMIT 10
 
 -- NOTE-- DOESN'T CONSIDER TIE BREAKS YET
@@ -102,14 +109,38 @@ GROUP BY uid
 WHERE distinct_states_count > 5
 ORDER BY distinct_states_count desc
 
-
-
 -- query 6 --
+SELECT  b.business_id as b_id, b.business_name as name, AVG(r.rating) as score, b.review_count as traveler_reviews_received
+FROM Business b
+INNER JOIN Review r ON r.business_id = b.business_id
+INNER JOIN BusinessCategory bc ON bc.business_id = b.business_id
+GROUP BY b_id
+WHERE bc.business_category_type LIKE "Burgers" AND b.city ="San Jose" AND b.state="CA"
+ORDER BY scores desc
 
 -- query 7 --
+SELECT r.yelp_user_id, SUM(mr.marked_helpful) as TotalAmount
+FROM Review r
+INNER JOIN MarkedReview mr ON r.review_id = mr.review_id
+GROUP BY r.yelp_user_id
+ORDER BY TotalAmount DESC
+LIMIT 1
 
 -- query 8 --
+SELECT AVG(r.rating) as avg_rating, b.review_count as review_count, b.business_id as bid, b.name as name
+FROM Business b
+INNER JOIN Review r ON r.business_id = b.business_id
+GROUP BY BusinessID
+WHERE review_count > 10 AND avg_rating = 5
+ORDER BY review_count desc
+
 
 -- query 9 --
+SELECT b.business_id as b_id, b.business_name as name, b.review_count as review_count
+FROM Business b
+INNER JOIN Review r ON r.business_id = b.business_id
+GROUP BY BusinessID
+WHERE r.rating=5 AND COUNT(b.review_count) > 50 -- NOTE** DOES THIS FILTER IT OUT AND THEN COUNT?
+ORDER BY review_count desc
 
 -- query 10 --
