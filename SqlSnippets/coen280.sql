@@ -17,26 +17,53 @@ CREATE TABLE YelpFriend(
     marked_helpful int, -- Acts as a boolean
     voted_positive varchar(255), -- Acts as a boolean -- positive = funny/cool/helpful
 
+    yelp_id int,
+
     FOREIGN KEY (yelp_id) REFERENCES YelpUser(yelp_id)
+);
+
+CREATE TABLE YelpUserReview(
+    review_id int,
+    yelp_user_id int,
+
+    FOREIGN KEY (review_id) REFERENCES Review(review_id),
+    FOREIGN KEY (yelp_user_id) REFERENCES YelpUser(yelp_user_id)
 );
 
 CREATE TABLE Review (
     review_id int,
     rating int,
     public_date varchar(255),
-    recommended varchar(255),
+    recommended int NOT NULL, --acts as boolean
     marked_helpful varchar(255),
-    content_type varchar(255) NOT NULL,   -- decides whether content is a text or photo
-    content_text varchar(255),
-    content_photo varchar(255),
+
+    yelp_user_id int,
+    business_id, int
 
     PRIMARY KEY (review_id),
     FOREIGN KEY (yelp_user_id) REFERENCES YelpUser(yelp_user_id),
     FOREIGN KEY (business_id) REFERENCES Business(business_id)
 );
 
+CREATE TABLE ReviewContent(
+    review_content_id int,
+    review_id int,
+    content_type varchar(255) NOT NULL,   -- decides whether content is a text or photo
+    content_text varchar(255),
+    content_photo varchar(255),
+
+    review_id int,
+
+    PRIMARY KEY (review_content_id),
+    FOREIGN KEY (review_id) REFERENCES Review(review_id),
+);
+
 CREATE TABLE MarkedReview(
     marked_helpful int, -- Acts as a boolean
+
+    yelp_user_id int,
+    review_id int,
+
     FOREIGN KEY (yelp_user_id) REFERENCES YelpUser(yelp_user_id),
     FOREIGN KEY (review_id) REFERENCES Review(review_id),
 );
@@ -50,14 +77,18 @@ CREATE TABLE Business (
     state varchar(255),
     review_count int,
 
+    business_category_id,
+
     PRIMARY KEY (business_id),
     FOREIGN KEY (business_category_id) REFERENCES BusinessCategory(business_category_id),
 );
 
 CREATE TABLE BusinessCategory(
     business_category_id int,
-    name varchar(255),
-    business_category_type varchar(255) NOT NULL,
+    category_name varchar(255),
+    category_type varchar(255) NOT NULL,
+
+    business_id int,
 
     PRIMARY KEY (business_category_id)
     FOREIGN KEY (business_id) REFERENCES Business(business_id)
@@ -68,6 +99,8 @@ CREATE TABLE BusinessPhoto(
     photo_description varchar (255),
     location varchar (255),
 
+    business_id int,
+
     PRIMARY KEY (business_photo_id),
     FOREIGN KEY (business_id) REFERENCES Business(business_id)
 );
@@ -76,14 +109,16 @@ CREATE TABLE BusinessPhoto(
 --------------------------------------------------------------------
 
 -- Query 1 --
-SELECT Count(*) FROM Business WHERE state="CA"
+SELECT Count(*)
+FROM Business
+WHERE state="CA"
 
 -- Query 2 --
 SELECT b.business_id AS b_id, b.name AS business_name, bc.business_category_id AS bc_id
 FROM Business b
-WHERE a.name LIKE "Coffee" AND NOT b.business_category_id LIKE "Coffee"
 INNER JOIN BusinessCategory bc ON b.business_id = bc.business_id
-ORDER BY b_id
+WHERE b.name LIKE "%Coffee%" AND NOT b.business_category_id LIKE "%Coffee%"
+ORDER BY b_id ASC
 
 -- Query 3 --
 SELECT b.business_id AS b_id, b.business_name AS name, b.review_count AS review_count, b.state AS state,
@@ -116,7 +151,7 @@ FROM Business b
 INNER JOIN Review r ON r.business_id = b.business_id
 INNER JOIN BusinessCategory bc ON bc.business_id = b.business_id
 GROUP BY b_id
-WHERE bc.business_category_type LIKE "Burgers" AND b.city ="San Jose" AND b.state="CA"
+WHERE bc.category_type LIKE "Burgers" AND b.city ="San Jose" AND b.state="CA"
 ORDER BY scores desc
 
 -- query 7 --
